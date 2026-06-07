@@ -1,5 +1,11 @@
+
+ 
 #+title: Emacs From Scratch Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+
+#+begin_src emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+end_src
 
 * Welcome!
 
@@ -38,9 +44,8 @@ Emacs has a built in package manager but it doesn't make it easy to automaticall
                            ("elpa" . "https://elpa.gnu.org/packages/")))
 
   (package-initialize)
-  (package-refresh-contents)
-  (unless package-archive-contents
-    (package-refresh-contents))
+  ;; (unless package-archive-contents
+  ;;   (package-refresh-contents))
 
     ;; Initialize use-package on non-Linux platforms
   (unless (package-installed-p 'use-package)
@@ -57,27 +62,39 @@ This section configures basic UI settings that remove unneeded elements to make 
 
 #+begin_src emacs-lisp
 
-  (setq inhibit-startup-message t)
+    (setq inhibit-startup-message t)
 
-  (scroll-bar-mode -1)        ; Disable visible scrollbar
-  (tool-bar-mode -1)          ; Disable the toolbar
-  (tooltip-mode -1)           ; Disable tooltips
-  (set-fringe-mode 10)        ; Give some breathing room
+    (scroll-bar-mode -1)        ; Disable visible scrollbar
+    (tool-bar-mode -1)          ; Disable the toolbar
+    (tooltip-mode -1)           ; Disable tooltips
+    (set-fringe-mode 10)        ; Give some breathing room
 
-  (menu-bar-mode -1)            ; Disable the menu bar
+    (menu-bar-mode -1)            ; Disable the menu bar
 
-  ;; Set up the visible bell
-  (setq visible-bell t)
+    (recentf-mode 1)
+    (setq history-length 25)
+    (savehist-mode 1)
 
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
+    (setq global-auto-revert-mode t)
+    (setq global-auto-revert-non-file-buffers-mode t)
 
-  ;; Disable line numbers for some modes
-  (dolist (mode '(org-mode-hook
-                  term-mode-hook
-                  shell-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+    ;; Set up the visible bell
+    (setq visible-bell t)
+    (desktop-save-mode 1)
+
+    (column-number-mode)
+    (global-display-line-numbers-mode t)
+
+    ;; Disable line numbers for some modes
+    (dolist (mode '(org-mode-hook
+                    term-mode-hook
+                    shell-mode-hook
+                    vterm-mode-hook
+                    eshell-mode-hook))
+      (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+    (setq initial-buffer-choice
+          (lambda () (org-agenda nil "t")(delete-other-windows)))
 
 #+end_src
 
@@ -103,42 +120,45 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 #+begin_src emacs-lisp
 
-  ;; Make ESC quit prompts
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+    ;; Make ESC quit prompts
+    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-  (use-package general
-    :config
-    (general-create-definer rune/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
+    (global-set-key (kbd "C-x b") 'counsel-switch-buffer)
+    
 
-    (rune/leader-keys
-      "t"  '(:ignore t :which-key "toggles")
-      "tt" '(counsel-load-theme :which-key "choose theme")))
+    (use-package general
+      :config
+      (general-create-definer rune/leader-keys
+        :keymaps '(normal insert visual emacs)
+        :prefix "SPC"
+        :global-prefix "C-SPC")
 
- ;; (use-package evil
- ;;   :init
- ;;   (setq evil-want-integration t)
- ;;   (setq evil-want-keybinding nil)
- ;;   (setq evil-want-C-u-scroll t)
- ;;   (setq evil-want-C-i-jump nil)
- ;;   :config
- ;;   (evil-mode 1)
- ;;   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
- ;;   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+      (rune/leader-keys
+        "t"  '(:ignore t :which-key "toggles")
+        "tt" '(counsel-load-theme :which-key "choose theme")))
 
-    ;; Use visual line motions even outside of visual-line-mode buffers
- ;;   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
- ;;   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+   ;; (use-package evil
+   ;;   :init
+   ;;   (setq evil-want-integration t)
+   ;;   (setq evil-want-keybinding nil)
+   ;;   (setq evil-want-C-u-scroll t)
+   ;;   (setq evil-want-C-i-jump nil)
+   ;;   :config
+   ;;   (evil-mode 1)
+   ;;   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+   ;;   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
- ;;   (evil-set-initial-state 'messages-buffer-mode 'normal)
- ;;   (evil-set-initial-state 'dashboard-mode 'normal))
+      ;; Use visual line motions even outside of visual-line-mode buffers
+   ;;   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+   ;;   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 
-;;  (use-package evil-collection
-;;    :after evil
-;;    :config
-;;    (evil-collection-init))
+   ;;   (evil-set-initial-state 'messages-buffer-mode 'normal)
+   ;;   (evil-set-initial-state 'dashboard-mode 'normal))
+
+  ;;  (use-package evil-collection
+  ;;    :after evil
+  ;;    :config
+  ;;    (evil-collection-init))
 
 #+end_src
 * Configuration
@@ -160,7 +180,7 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 #+begin_src emacs-lisp
 
 (use-package doom-themes
-  :init (load-theme 'doom-dracula t))
+  :init (load-theme 'doom-molokai t))
 
 #+end_src
 
@@ -172,11 +192,22 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 #+begin_src emacs-lisp
 
-(use-package all-the-icons)
+(use-package nerd-icons)
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 15)))
+  :custom 
+  ((doom-modeline-height 15)
+   (doom-modeline-icon (if (window-system) t nil)) ; Ensures icons load in GUI
+   (doom-modeline-font-family "nerd-icons")))  ; Forces legacy font map
+
+
+  ;; (use-package all-the-icons)
+
+  ;; (use-package doom-modeline
+  ;;   ;; :ensure t
+  ;;   :init (doom-modeline-mode 1)
+  ;;   :custom ((doom-modeline-height 15)))
 
 #+end_src
 
@@ -329,16 +360,16 @@ This section contains the basic configuration for =org-mode= plus the configurat
     (setq org-log-into-drawer t)
 
     (setq org-agenda-files
-          '("~/work/org/tasks.org"
+          '("~/org/todo.org"
             ;;"~/Projects/Code/emacs-from-scratch/OrgFiles/Habits.org"
-            "~/work/org/birthdays.org"))
+            "~/org/birthdays.org"))
 
     (require 'org-habit)
     (add-to-list 'org-modules 'org-habit)
     (setq org-habit-graph-column 60)
 
     (setq org-todo-keywords
-      '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
         (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
     (setq org-refile-targets
@@ -360,6 +391,9 @@ This section contains the basic configuration for =org-mode= plus the configurat
          ("publish" . ?P)
          ("batch" . ?b)
          ("note" . ?n)
+         ("study" . ?s)
+         ("documentation" . ?d)
+         ("cars" . ?c)
          ("idea" . ?i)))
 
     ;; Configure custom agenda views
@@ -405,17 +439,17 @@ This section contains the basic configuration for =org-mode= plus the configurat
                (org-agenda-files org-agenda-files)))
         (todo "COMPLETED"
               ((org-agenda-overriding-header "Completed Projects")
-               (org-agenda-files org-agenda-files)))
+              (org-agenda-files org-agenda-files)))
         (todo "CANC"
               ((org-agenda-overriding-header "Cancelled Projects")
                (org-agenda-files org-agenda-files)))))))
 
     (setq org-capture-templates
       `(("t" "Tasks / Projects")
-        ("tt" "Task" entry (file+olp "~/work/org/tasks.org" "Inbox")
+        ("tt" "Task" entry (file+olp "~/work/org/Tasks.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-        ("j" "Jourjnal Entries")
+        ("j" "Journal Entries")
         ("jj" "Journal" entry
              (file+olp+datetree "~/work/org/Journal.org")
              "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
@@ -429,11 +463,11 @@ This section contains the basic configuration for =org-mode= plus the configurat
              :empty-lines 1)
 
         ("w" "Workflows")
-        ("we" "Checking Email" entry (file+olp+datetree "~/work/org/Journal.org")
+        ("we" "Checking Email" entry (file+olp+datetree "~/Journal.org")
              "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
         ("m" "Metrics Capture")
-        ("mw" "Weight" table-line (file+headline "~/work/org/Metrics.org" "Weight")
+        ("mw" "Weight" table-line (file+headline "~/Metrics.org" "Weight")
          "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
     (define-key global-map (kbd "C-c j")
@@ -464,7 +498,7 @@ We use [[https://github.com/joostkremers/visual-fill-column][visual-fill-column]
 #+begin_src emacs-lisp
 
   (defun efs/org-mode-visual-fill ()
-    (setq visual-fill-column-width 100
+    (setq visual-fill-column-width 160
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
@@ -506,9 +540,180 @@ This snippet adds a hook to =org-mode= buffers so that =efs/org-babel-tangle-con
 
 #+end_src
 
+* Org roam
+
+#+begin_src emacs-lisp
+
+  (use-package org-roam
+    :ensure t
+    :demand t  ;; Ensure org-roam is loaded by default
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/org-roam")
+    (org-roam-completion-everywhere t)
+    (org-roam-capture-templates
+     '(("d" "default" plain
+        "%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+        :unnarrowed t)
+       ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+        :unnarrowed t)))
+
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n I" . org-roam-node-insert-immediate)
+           ("C-c n p" . my/org-roam-find-project)
+           ("C-c n t" . my/org-roam-capture-task)
+           ("C-c n b" . my/org-roam-capture-inbox)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point)
+           :map org-roam-dailies-map
+           ("Y" . org-roam-dailies-capture-yesterday)
+           ("T" . org-roam-dailies-capture-tomorrow))
+    :bind-keymap
+    ("C-c n d" . org-roam-dailies-map)
+    :config
+    (require 'org-roam-dailies) ;; Ensure the keymap is available
+    (org-roam-db-autosync-mode))
+
+  (defun org-roam-node-insert-immediate (arg &rest args)
+    (interactive "P")
+    (let ((args (push arg args))
+          (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                    '(:immediate-finish t)))))
+      (apply #'org-roam-node-insert args)))
+
+  (defun my/org-roam-filter-by-tag (tag-name)
+    (lambda (node)
+      (member tag-name (org-roam-node-tags node))))
+
+  (defun my/org-roam-list-notes-by-tag (tag-name)
+    (mapcar #'org-roam-node-file
+            (seq-filter
+             (my/org-roam-filter-by-tag tag-name)
+             (org-roam-node-list))))
+
+  (defun my/org-roam-refresh-agenda-list ()
+    (interactive)
+    (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+
+  ;; Build the agenda list the first time for the session
+  (my/org-roam-refresh-agenda-list)
+
+  (defun my/org-roam-project-finalize-hook ()
+    "Adds the captured project file to `org-agenda-files' if the
+   capture was not aborted."
+    ;; Remove the hook since it was added temporarily
+    (remove-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Add project file to the agenda list if the capture was confirmed
+    (unless org-note-abort
+      (with-current-buffer (org-capture-get :buffer)
+        (add-to-list 'org-agenda-files (buffer-file-name)))))
+
+  (defun my/org-roam-find-project ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Select a project file to open, creating it if necessary
+    (org-roam-node-find
+     nil
+     nil
+     (my/org-roam-filter-by-tag "Project")
+     :templates
+     '(("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: Project")
+        :unnarrowed t))))
+
+  (defun my/org-roam-capture-inbox ()
+    (interactive)
+    (org-roam-capture- :node (org-roam-node-create)
+                       :templates '(("i" "inbox" plain "* %?"
+                                     :if-new (file+head "Inbox.org" "#+title: Inbox\n")))))
+
+  (defun my/org-roam-capture-task ()
+    (interactive)
+    ;; Add the project file to the agenda after capture is finished
+    (add-hook 'org-capture-after-finalize-hook #'my/org-roam-project-finalize-hook)
+
+    ;; Capture the new task, creating the project file if necessary
+    (org-roam-capture- :node (org-roam-node-read
+                              nil
+                              (my/org-roam-filter-by-tag "Project"))
+                       :templates '(("p" "project" plain "** TODO %?"
+                                     :if-new (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+                                                            "#+title: ${title}\n#+category: ${title}\n#+filetags: Project"
+                                                            ("Tasks"))))))
+
+  (defun my/org-roam-copy-todo-to-today ()
+    (interactive)
+    (let ((org-refile-keep t) ;; Set this to nil to delete the original!
+          (org-roam-dailies-capture-templates
+           '(("t" "tasks" entry "%?"
+              :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
+          (org-after-refile-insert-hook #'save-buffer)
+          today-file
+          pos)
+      (save-window-excursion
+        (org-roam-dailies--capture (current-time) t)
+        (setq today-file (buffer-file-name))
+        (setq pos (point)))
+
+      ;; Only refile if the target file is different than the current file
+      (unless (equal (file-truename today-file)
+                     (file-truename (buffer-file-name)))
+        (org-refile nil nil (list "Tasks" today-file nil pos)))))
+
+  (add-to-list 'org-after-todo-state-change-hook
+               (lambda ()
+                 (when (equal org-state "DONE")
+                   (my/org-roam-copy-todo-to-today))))
+
+  (use-package consult
+  :init
+  (define-prefix-command 'Consult)
+  (global-set-key (kbd "C-c s") 'Consult)
+  :bind
+  ("C-f" . consult-line)
+  ("C-c s f" . consult-find)
+  ("C-c s g" . consult-grep)
+  ("C-c s l" . consult-line)
+  ("C-c s L" . consult-line-multi)
+  ("C-c s k" . consult-keep-lines)
+  ("C-c s r" . consult-ripgrep)
+  ("C-c s u" . consult-focus-lines)
+  :config
+  (setq consult-narrow-key "<"))
+
+  ;; Example configuration for Consult
+  ;; (use-package org-roam
+  ;; :ensure t
+  ;; :custom
+  ;; (org-roam-directory "~/org-roam")
+  ;; (org-roam-completion-everywhere t)
+  ;; :bind (("C-c n l" . org-roam-buffer-toggle)
+  ;;        ("C-c n f" . org-roam-node-find)
+  ;;        ("C-c n i" . org-roam-node-insert)
+  ;; :map org-mode-map
+  ;;        ("C-M-i"    . completion-at-point))
+  ;; :bind-keymap
+  ;; ("C-c n d" . org-roam-dailies-map)
+  ;; :config
+  ;; (require 'org-roam-dailies) ;; Ensure the keymap is available
+  ;; (org-roam-db-autosync-mode)
+  ;; (org-roam-setup))
+
+#+end_src
+
+#+RESULTS:
+: completion-at-point
+
 * Development
 ** Languages
-
 *** Language Servers
 #+begin_src emacs-lisp
 
@@ -554,28 +759,248 @@ This snippet adds a hook to =org-mode= buffers so that =efs/org-babel-tangle-con
 (use-package lsp-ivy)
 #+end_src
 
-** Debugging
-#+begin_src emacs-lisp
-(use-package dap-mode
-  ;; Uncomment the config below if you want all UI panes to be hidden by default!
-  ;; :custom
-  ;; (lsp-enable-dap-auto-configure nil)
-  ;; :config
-  ;; (dap-ui-mode 1)
+*** OCaml
+#+BEGIN_SRC emacs-lisp
+   (use-package auto-complete
+       :ensure t
+       :config
+       (setq ac-use-menu-map t)
+       (setq ac-ignore-case nil)
+       (define-key ac-menu-map "\C-n" 'ac-next)
+       (define-key ac-menu-map "\C-p" 'ac-previous))
 
-  :config
-  ;; Set up Node debugging
-  (require 'dap-node)
-  (dap-node-setup) ;; Automatically installs Node debug adapter if needed
 
-  ;; Bind `C-c l d` to `dap-hydra` for easy access
-  (general-define-key
-    :keymaps 'lsp-mode-map
-    :prefix lsp-keymap-prefix
-    "d" '(dap-hydra t :wk "debugger")))
-#+end_src
+  (use-package utop
+  :ensure t)
+
+  (use-package merlin
+  :ensure t)
+
+   (use-package  tuareg
+      :ensure t)
+
+  (use-package ocp-indent
+      :ensure t)
+
+
+  (add-hook 'tuareg-mode-hook 'tuareg-imenu-set-imenu)
+  (setq auto-mode-alist
+        (append '(("\\.ml[ily]?$" . tuareg-mode)
+                  ("\\.topml$" . tuareg-mode))
+                auto-mode-alist))
+  ;;(autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+  (autoload 'utop-minor-mode "utop" "Toplevel for OCaml" t)
+  (add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)
+  (add-hook 'tuareg-mode-hook 'merlin-mode)
+  (setq merlin-use-auto-complete-mode t)
+  (setq merlin-error-after-save nil)
+
+  ;; -- merlin setup ---------------------------------------
+
+  (setq opam-share (substring (shell-command-to-string "opam config var share") 0 -1))
+  (add-to-list 'load-path (concat opam-share "/emacs/site-lisp"))
+  (require 'merlin)
+
+  ;; Enable Merlin for ML buffers
+  (add-hook 'tuareg-mode-hook 'merlin-mode)
+  (add-hook 'merlin-mode-hook 'company-mode)
+
+  ;; So you can do it on a mac, where `C-<up>` and `C-<down>` are used
+  ;; by spaces.
+  (define-key merlin-mode-map
+    (kbd "C-c <up>") 'merlin-type-enclosing-go-up)
+  (define-key merlin-mode-map
+    (kbd "C-c <down>") 'merlin-type-enclosing-go-down)
+  (set-face-background 'merlin-type-face "#88FF44")
+
+  ;; -- enable auto-complete -------------------------------
+  ;; Not required, but useful along with merlin-mode
+  (require 'auto-complete)
+  (add-hook 'tuareg-mode-hook 'auto-complete-mode)
+
+  (add-to-list 'load-path "/home/mihshe/.opam/4.10.0/share/emacs/site-lisp")
+  (require 'ocp-indent)
+
+
+
+#+END_SRC
+#+RESULTS:
+| auto-complete-mode | merlin-mode | utop-setup-ocaml-buffer | tuareg-imenu-set-imenu |
+
+*** Java
+
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck)
+(use-package yasnippet :config (yas-global-mode))
+(use-package lsp-mode :hook ((lsp-mode . lsp-enable-which-key-integration))
+  :config (setq lsp-completion-enable-additional-text-edit nil))
+;;(setq lsp-java-jdt-download-url  "https://download.eclipse.org/jdtls/milestones/0.57.0/jdt-language-server-0.57.0-202006172108.tar.gz")
+(use-package hydra)
+(use-package company)
+(use-package lsp-ui)
+(use-package which-key :config (which-key-mode))
+(use-package lsp-java :config (add-hook 'java-mode-hook 'lsp))
+(use-package dap-mode :after lsp-mode :config (dap-auto-configure-mode))
+(use-package dap-java :ensure nil)
+(use-package helm-lsp)
+(use-package helm
+  :config (helm-mode))
+(use-package lsp-treemacs)
+
+(setq-default tab-width 4) ; or any other preferred value
+(setq cua-auto-tabify-rectangles nil)
+
+ (setq-default c-default-style "linux" c-basic-offset 4)
+    (progn
+      ;; make indentation commands use space only (never tab character)
+      (setq-default indent-tabs-mode nil)
+      ;; emacs 23.1 to 26, default to t
+      ;; if indent-tabs-mode is t, it means it may use tab, resulting mixed space and tab
+      )
+
+    ;; make tab key always call a indent command.
+    (setq-default tab-always-indent t)
+
+    ;; make tab key call indent command or insert tab character, depending on cursor position
+    (setq-default tab-always-indent nil)
+
+    ;; make tab key do indent first then completion.
+    (setq-default tab-always-indent 'complete)
+#+END_SRC
+*** Scala
+
+#+BEGIN_SRC emacs-lisp
+  ;; (package-initialize)
+
+  ;; ;; Install use-package if not already installed
+  ;; (unless (package-installed-p 'use-package)
+  ;;   (package-refresh-contents)
+  ;;   (package-install 'use-package))
+
+  ;; (require 'use-package)
+
+  ;; Enable defer and ensure by default for use-package
+  ;; Keep auto-save/backup files separate from source code:  https://github.com/scalameta/metals/issues/1027
+  ;; (setq use-package-always-defer t
+  ;;       use-package-always-ensure t
+  ;;       backup-directory-alist `((".*" . ,temporary-file-directory))
+  ;;       auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+
+  ;; Enable scala-mode for highlighting, indentation and motion commands
+  (use-package scala-mode
+    :interpreter
+      ("scala" . scala-mode))
+
+  ;; Enable sbt mode for executing sbt commands
+  (use-package sbt-mode
+    :commands sbt-start sbt-command
+    :config
+    ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+    ;; allows using SPACE when in the minibuffer
+    (substitute-key-definition
+     'minibuffer-complete-word
+     'self-insert-command
+     minibuffer-local-completion-map)
+     ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+     (setq sbt:program-options '("-Dsbt.supershell=false"))
+  )
+
+  ;; Enable nice rendering of diagnostics like compile errors.
+  (use-package flycheck
+    :init (global-flycheck-mode))
+
+  (use-package lsp-mode
+    ;; Optional - enable lsp-mode automatically in scala files
+    :hook  (scala-mode . lsp)
+           (lsp-mode . lsp-lens-mode)
+    :config
+    ;; Uncomment following section if you would like to tune lsp-mode performance according to
+    ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+    ;;       (setq gc-cons-threshold 100000000) ;; 100mb
+    ;;       (setq read-process-output-max (* 1024 1024)) ;; 1mb
+    ;;       (setq lsp-idle-delay 0.500)
+    ;;       (setq lsp-log-io nil)
+    ;;       (setq lsp-completion-provider :capf)
+    (setq lsp-prefer-flymake nil))
+
+  ;; Add metals backend for lsp-mode
+  (use-package lsp-metals)
+
+  ;; Enable nice rendering of documentation on hover
+  ;;   Warning: on some systems this package can reduce your emacs responsiveness significally.
+  ;;   (See: https://emacs-lsp.github.io/lsp-mode/page/performance/)
+  ;;   In that case you have to not only disable this but also remove from the packages since
+  ;;   lsp-mode can activate it automatically.
+  (use-package lsp-ui)
+
+  ;; lsp-mode supports snippets, but in order for them to work you need to use yasnippet
+  ;; If you don't want to use snippets set lsp-enable-snippet to nil in your lsp-mode settings
+  ;;   to avoid odd behavior with snippets and indentation
+  (use-package yasnippet)
+
+  ;; Use company-capf as a completion provider.
+  ;;
+  ;; To Company-lsp users:
+  ;;   Company-lsp is no longer maintained and has been removed from MELPA.
+  ;;   Please migrate to company-capf.
+  (use-package company
+    :hook (scala-mode . company-mode)
+    :config
+    (setq lsp-completion-provider :capf))
+
+  ;; Use the Debug Adapter Protocol for running tests and debugging
+  (use-package posframe
+    ;; Posframe is a pop-up tool that must be manually installed for dap-mode
+    )
+  (use-package dap-mode
+    :hook
+    (lsp-mode . dap-mode)
+    (lsp-mode . dap-ui-mode)
+    )
+#+END_SRC
+*** Rust
+#+BEGIN_SRC emacs-lisp
+(use-package rust-mode)
+(require 'rust-mode)
+#+END_SRC
+*** Clojure
+#+BEGIN_SRC emacs-lisp
+  (use-package cider)
+  (use-package paredit)
+#+END_SRC
+*** Ruby
+#+BEGIN_SRC emacs-lisp
+  (use-package ruby-end)
+  (use-package robe)
+  (add-hook 'ruby-mode-hook 'robe-mode)
+  (push 'company-robe company-backends)
+  (use-package flymake-ruby)
+  (add-hook 'ruby-mode-hook 'flymake-ruby-load)
+  ;;(use-package rubocop)
+  ;;(use-package rubocop-ls)
+
+#+END_SRC
 
 ** Projectile
+#+begin_src emacs-lisp
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  ;; NOTE: Set this to the folder where you keep your Git repos!
+  (when (file-directory-p "~/Projects/Code")
+    (setq projectile-project-search-path '("~/Projects/Code")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
+
+#+end_src
+
+
 ** Magit
 
 [[https://magit.vc/][Magit]] is the best Git interface I've ever used.  Common Git operations are easy to execute quickly using Magit's command panel system.
@@ -612,28 +1037,28 @@ This snippet adds a hook to =org-mode= buffers so that =efs/org-babel-tangle-con
 ** Term
 #+begin_src emacs-lisp
 
-(use-package term
-  :config
-  (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
-  ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
+  (use-package term
+    :config
+    (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
+    ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
 
-  ;; Match the default Bash shell prompt.  Update this if you have a custom prompt
-  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+    ;; Match the default Bash shell prompt.  Update this if you have a custom prompt
+    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
 
-(use-package eterm-256color
-  :hook (term-mode . eterm-256color-mode))
+  ;; (use-package eterm-256color
+  ;;   :hook (term-mode . eterm-256color-mode))
 #+end_src
 
 ** Vterm
 
 #+begin_src emacs-lisp
 
-  ;; (use-package vterm
-  ;;   :commands vterm
-  ;;   :config
-  ;;   (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
-  ;;   ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
-  ;;   (setq vterm-max-scrollback 10000))
+  (use-package vterm
+    :commands vterm
+    :config
+    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")  ;; Set this to match your custom shell prompt
+    ;;(setq vterm-shell "zsh")                       ;; Set this to customize the shell to launch
+    (setq vterm-max-scrollback 10000))
 
  #+end_src
 
@@ -682,10 +1107,13 @@ This snippet adds a hook to =org-mode= buffers so that =efs/org-babel-tangle-con
 
   (require 'dired-x)
 
-  (use-package dired-single)
+ ;; (use-package dired-single)
 
   (use-package all-the-icons-dired
-    :hook (dired-mode . all-the-icons-dired-mode))
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+  ;; (use-package all-the-icons-dired
+  ;;   :hook (dired-mode . all-the-icons-dired-mode))
 
   ;; (use-package dired-open
   ;;   :config
@@ -694,9 +1122,9 @@ This snippet adds a hook to =org-mode= buffers so that =efs/org-babel-tangle-con
   ;;   (setq dired-open-extensions '(("png" . "feh")
   ;;                                 ("mkv" . "mpv"))))
 
-  ;; (use-package dired-hide-dotfiles
-  ;;   :hook (dired-mode . dired-hide-dotfiles-mode)
-  ;;   :config
-  ;;   (evil-collection-define-key 'normal 'dired-mode-map
-  ;;     "H" 'dired-hide-dotfiles-mode))
+  (use-package dired-hide-dotfiles
+    :hook (dired-mode . dired-hide-dotfiles-mode))
+    ;; :config
+    ;; (evil-collection-define-key 'normal 'dired-mode-map
+    ;;   "H" 'dired-hide-dotfiles-mode))
 #+end_src
